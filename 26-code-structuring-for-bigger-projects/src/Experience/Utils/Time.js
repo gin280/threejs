@@ -1,30 +1,20 @@
 import EventEmitter from "./EventEmitter.js"
+import { Clock } from "three"
 
 export default class Time extends EventEmitter {
   constructor() {
     super()
 
-    // Setup
-    this.start = Date.now()
-    this.current = this.start
-    this.elapsed = 0
-    this.delta = 16
-
-    window.requestAnimationFrame(() => {
-      this.tick()
-    })
+    this.clock = new Clock()
+    this.tick()
   }
 
-  tick() {
-    const currentTime = Date.now()
-    this.delta = currentTime - this.current
-    this.current = currentTime
-    this.elapsed = this.current - this.start
+  tick = () => {
+    this.delta = this.clock.getDelta()
+    this.elapsed = this.clock.getElapsedTime()
 
     this.trigger("tick")
 
-    window.requestAnimationFrame(() => {
-      this.tick()
-    })
+    window.requestAnimationFrame(this.tick)
   }
 }

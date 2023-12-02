@@ -13,11 +13,17 @@ export default class Camera {
   }
 
   setInstance() {
+    // 从外部获取或使用默认值
+    const fieldOfView = 75
+    const aspectRatio = this.sizes.width / this.sizes.height
+    const nearPlane = 0.1
+    const farPlane = 100
+
     this.instance = new THREE.PerspectiveCamera(
-      75,
-      this.sizes.width / this.sizes.height,
-      0.1,
-      100
+      fieldOfView,
+      aspectRatio,
+      nearPlane,
+      farPlane
     )
     this.instance.position.set(6, 4, 8)
     this.scene.add(this.instance)

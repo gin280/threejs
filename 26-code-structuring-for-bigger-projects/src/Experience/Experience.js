@@ -8,14 +8,14 @@ import Resources from "./Utils/Resources"
 import sources from "./sources"
 import Debug from "./Utils/Debug"
 
-let instance = null
-
 export default class Experience {
+  static instance = null
   constructor(canvas) {
-    if (instance) {
-      return instance
+    if (Experience.instance) {
+      return Experience.instance
     }
-    instance = this
+
+    Experience.instance = this
     // Global access
     window.experience = this
     this.canvas = canvas
@@ -30,13 +30,7 @@ export default class Experience {
     this.renderer = new Renderer()
     this.world = new World()
 
-    this.sizes.on("resize", () => {
-      this.resize()
-    })
-
-    this.time.on("tick", () => {
-      this.update()
-    })
+    this.setupEventListeners()
   }
 
   resize() {
@@ -50,31 +44,48 @@ export default class Experience {
     this.renderer.update()
   }
 
+  setupEventListeners() {
+    this.sizes.on("resize", () => this.resize())
+    this.time.on("tick", () => this.update())
+  }
+
+  removeEventListeners() {
+    this.sizes.off("resize", this.resize)
+    this.time.off("tick", this.update)
+  }
+
   destroy() {
-    this.sizes.off("resize")
-    this.time.off("tick")
+    this.removeEventListeners()
+    this.disposeScene(this.scene)
+    this.disposeRenderer(this.renderer)
+    this.disposeCamera(this.camera)
 
-    // Traverse the whole scene
-    this.scene.traverse((child) => {
-      // Test if it's a mesh
-      if (child instanceof THREE.Mesh) {
-        child.geometry.dispose()
+    if (this.debug.active) {
+      this.debug.ui.destroy()
+    }
+  }
 
-        // Loop through the material properties
-        for (const key in child.material) {
-          const value = child.material[key]
+  disposeScene(scene) {
+    scene.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        if (object.geometry) object.geometry.dispose()
 
-          // Test if there is a dispose function
-          if (value && typeof value.dispose === "function") {
-            value.dispose()
+        if (object.material) {
+          if (object.material instanceof Array) {
+            object.material.forEach((material) => material.dispose())
+          } else {
+            object.material.dispose()
           }
         }
       }
     })
+  }
 
-    this.camera.controls.dispose()
-    this.renderer.instance.dispose()
+  disposeRenderer(renderer) {
+    renderer.instance.dispose()
+  }
 
-    if (this.debug.active) this.debug.ui.destroy()
+  disposeCamera(camera) {
+    camera.controls.dispose()
   }
 }
