@@ -1,8 +1,8 @@
 import React from "react"
 
-const Cube = () => {
+const Cube = ({ scale = 1 }) => {
   return (
-    <mesh position-x={2} scale={1.5}>
+    <mesh position-x={2} scale={scale}>
       <boxGeometry />
       <meshStandardMaterial color="mediumpurple" />
     </mesh>
